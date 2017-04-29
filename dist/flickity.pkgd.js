@@ -474,7 +474,7 @@ return getSize;
 });
 
 /**
- * matchesSelector v2.0.1
+ * matchesSelector v2.0.2
  * matchesSelector( element, '.selector' )
  * MIT license
  */
@@ -500,7 +500,7 @@ return getSize;
   'use strict';
 
   var matchesMethod = ( function() {
-    var ElemProto = Element.prototype;
+    var ElemProto = window.Element.prototype;
     // check for the standard method name first
     if ( ElemProto.matches ) {
       return 'matches';
@@ -528,7 +528,7 @@ return getSize;
 }));
 
 /**
- * Fizzy UI utils v2.0.3
+ * Fizzy UI utils v2.0.5
  * MIT license
  */
 
@@ -589,7 +589,8 @@ utils.makeArray = function( obj ) {
   if ( Array.isArray( obj ) ) {
     // use object if already an array
     ary = obj;
-  } else if ( obj && typeof obj.length == 'number' ) {
+  } else if ( obj && typeof obj == 'object' &&
+    typeof obj.length == 'number' ) {
     // convert nodeList to array
     for ( var i=0; i < obj.length; i++ ) {
       ary.push( obj[i] );
@@ -613,7 +614,7 @@ utils.removeFrom = function( ary, obj ) {
 // ----- getParent ----- //
 
 utils.getParent = function( elem, selector ) {
-  while ( elem != document.body ) {
+  while ( elem.parentNode && elem != document.body ) {
     elem = elem.parentNode;
     if ( matchesSelector( elem, selector ) ) {
       return elem;
@@ -1037,8 +1038,10 @@ proto.positionSlider = function() {
   var value = this.getPositionValue( x );
   // use 3D tranforms for hardware acceleration on iOS
   // but use 2D when settled, for better font-rendering
-  this.slider.style[ transformProperty ] = this.isAnimating ?
-    'translate3d(' + value + ',0,0)' : 'translateX(' + value + ')';
+  //this.slider.style[ transformProperty ] = this.isAnimating ?
+  //  'translate3d(' + value + ',0,0)' : 'translateX(' + value + ')';
+  this.slider.style[ transformProperty ] = 'translateX(' + value + ')';
+
 
   // scroll event
   var firstSlide = this.slides[0];
@@ -1260,7 +1263,8 @@ Flickity.defaults = {
   percentPosition: true,
   resize: true,
   selectedAttraction: 0.025,
-  setGallerySize: true
+  setGallerySize: true,
+  selectClosest: false
   // watchCSS: false,
   // wrapAround: false
 };
@@ -1691,7 +1695,7 @@ proto.select = function( index, isWrap, isInstant ) {
 proto._wrapSelect = function( index ) {
   var len = this.slides.length;
   var isWrapping = this.options.wrapAround && len > 1;
-  if ( !isWrapping ) {
+  if ( !isWrapping || ( !this.isDragSelect && !this.options.selectClosest)) {
     return index;
   }
   var wrapIndex = utils.modulo( index, len );
@@ -1699,7 +1703,8 @@ proto._wrapSelect = function( index ) {
   var delta = Math.abs( wrapIndex - this.selectedIndex );
   var backWrapDelta = Math.abs( ( wrapIndex + len ) - this.selectedIndex );
   var forewardWrapDelta = Math.abs( ( wrapIndex - len ) - this.selectedIndex );
-  if ( !this.isDragSelect && backWrapDelta < delta ) {
+
+  if ( !this.isDragSelect && backWrapDelta < delta) {
     index += len;
   } else if ( !this.isDragSelect && forewardWrapDelta < delta ) {
     index -= len;
@@ -1997,6 +2002,11 @@ utils.htmlInit( Flickity, 'flickity' );
 if ( jQuery && jQuery.bridget ) {
   jQuery.bridget( 'flickity', Flickity );
 }
+
+// set internal jQuery, for Webpack + jQuery v3, #478
+Flickity.setJQuery = function( jq ) {
+  jQuery = jq;
+};
 
 Flickity.Cell = Cell;
 

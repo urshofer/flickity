@@ -105,7 +105,8 @@ Flickity.defaults = {
   percentPosition: true,
   resize: true,
   selectedAttraction: 0.025,
-  setGallerySize: true
+  setGallerySize: true,
+  selectClosest: false
   // watchCSS: false,
   // wrapAround: false
 };
@@ -536,7 +537,7 @@ proto.select = function( index, isWrap, isInstant ) {
 proto._wrapSelect = function( index ) {
   var len = this.slides.length;
   var isWrapping = this.options.wrapAround && len > 1;
-  if ( !isWrapping ) {
+  if ( !isWrapping || ( !this.isDragSelect && !this.options.selectClosest)) {
     return index;
   }
   var wrapIndex = utils.modulo( index, len );
@@ -544,7 +545,8 @@ proto._wrapSelect = function( index ) {
   var delta = Math.abs( wrapIndex - this.selectedIndex );
   var backWrapDelta = Math.abs( ( wrapIndex + len ) - this.selectedIndex );
   var forewardWrapDelta = Math.abs( ( wrapIndex - len ) - this.selectedIndex );
-  if ( !this.isDragSelect && backWrapDelta < delta ) {
+
+  if ( !this.isDragSelect && backWrapDelta < delta) {
     index += len;
   } else if ( !this.isDragSelect && forewardWrapDelta < delta ) {
     index -= len;
